@@ -9,9 +9,9 @@ import java.util.Set;
 public class Solver {
 
     private List<Board> solutionBoards = new LinkedList<Board>();
-    MinPQ<ComparableBoard> minPQ = new MinPQ<ComparableBoard>();
-    private static final int[][] GOAL_ARRAY = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
-    private ComparableBoard solutionBoard = new ComparableBoard(new Board(GOAL_ARRAY));
+    private MinPQ<ComparableBoard> minPQ = new MinPQ<ComparableBoard>();
+    private static int[][] GOAL_ARRAY;
+    private ComparableBoard solutionBoard;
     private int moves;
     private Board initial;
 
@@ -74,6 +74,10 @@ public class Solver {
         }
     }
     private int solve(Board initial){
+
+        if (initial.isGoal()){
+            return 0;
+        }
         int m = 0;
         solutionBoards = new LinkedList<Board>();
         solutionBoards.add(initial);
@@ -105,6 +109,21 @@ public class Solver {
     }
 
     public Solver(Board initial) {
+        int N = initial.dimension();
+
+        GOAL_ARRAY = new int[N][N];
+        for (int i =0;i < N; i++){
+            for (int j =0 ; j <N; j++){
+                if ((i == N-1) && (j == N-1)){
+                    GOAL_ARRAY[i][j] = 0;
+                }else {
+                    GOAL_ARRAY[i][j] = i * N + j+1;
+                }
+            }
+        }
+
+        solutionBoard = new ComparableBoard(new Board(GOAL_ARRAY));
+
         this.initial = initial;
         this.moves = solve(this.initial);
 
@@ -130,6 +149,9 @@ public class Solver {
 
     }                      // min number of moves to solve initial board; -1 if no solution
     public Iterable<Board> solution() {
+        if (!isSolvable()){
+            return null;
+        }
         return solutionBoards;
 
     }      // sequence of boards in a shortest solution; null if no solution

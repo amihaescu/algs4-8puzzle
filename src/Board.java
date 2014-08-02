@@ -13,18 +13,26 @@ public class Board {
     private int[] linearBlocks;
     private int dimension;
     private final Set<Board> neighbours = new HashSet<Board>();
-    private static final int[][] GOAL_ARRAY = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
+    private int[][] goalArray;
 
 
 
     public Board(int[][] b){
         this.dimension = b.length;
-        blocks = new int[this.dimension][this.dimension];
+        int N = this.dimension;
+        this.blocks = new int[this.dimension][this.dimension];
+        this.goalArray = new int[this.dimension][this.dimension];
         linearBlocks = new int[this.dimension*this.dimension+1];
         for (int i= 0;i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++){
                 this.blocks[i][j] = b[i][j];
+                if ((i == N-1) && (j == N-1)){
+                    goalArray[i][j] = 0;
+                }else {
+                    goalArray[i][j] = i * N + j+1;
+                }
             }
+
     }
     private class Block{
         private int x;
@@ -61,7 +69,7 @@ public class Board {
     private Block findCorrectIndices(int value){
         for (int i= 0;i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++){
-                if (GOAL_ARRAY[i][j] == value)
+                if (goalArray[i][j] == value)
                     return new Block(i,j);
             }
         return null;
@@ -71,7 +79,7 @@ public class Board {
         for (int i= 0;i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++){
                 if (blocks[i][j] != 0){
-                    if (blocks[i][j] != GOAL_ARRAY[i][j]){
+                    if (blocks[i][j] != goalArray[i][j]){
                         Block correctBlock = findCorrectIndices(blocks[i][j]);
                         int man = Math.abs(i-correctBlock.x)+Math.abs(j-correctBlock.y);
                         manhattan += man;
@@ -82,21 +90,17 @@ public class Board {
             }
         return manhattan;
     }                 // sum of Manhattan distances between blocks and goal
-    private int toX(final int arg){
-        return Math.round(arg/this.dimension);
-    }
-    private int toY(final int arg, int bX){
-        return Math.abs(arg - (bX * this.dimension));
 
-    }
     public boolean isGoal() {
-        int c = 1;
-        for (int i= 0;i < this.dimension; i++)
-            for (int j = 0; j < this.dimension; j++){
-                if (blocks[i][j]!= c){
+
+        int N = this.dimension;
+
+        for (int i= 0;i < N; i++)
+            for (int j = 0; j < N; j++){
+                if (blocks[i][j]!= goalArray[i][j]){
                     return false;
                 }
-                c++;
+
             }
         return true;
     }                // is this board the goal board?
@@ -137,6 +141,7 @@ public class Board {
         throw new IllegalStateException("Couldn't find zero-th element!");
     }
     public boolean equals(Object y) {
+        if (y == null) return false;
         if (this == y) return true;
         if (this.getClass() != y.getClass()) return false;
 
