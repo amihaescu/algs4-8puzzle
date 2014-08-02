@@ -8,14 +8,19 @@ import java.util.Set;
  * Created by andrei on 7/29/14.
  */
 public class Board {
+
     private int[][] blocks;
     private int[] linearBlocks;
     private int dimension;
     private final Set<Board> neighbours = new HashSet<Board>();
+    private static final int[][] GOAL_ARRAY = {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
+
+
+
     public Board(int[][] b){
         this.dimension = b.length;
         blocks = new int[this.dimension][this.dimension];
-        linearBlocks = new int[this.dimension*this.dimension];
+        linearBlocks = new int[this.dimension*this.dimension+1];
         for (int i= 0;i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++){
                 this.blocks[i][j] = b[i][j];
@@ -41,7 +46,8 @@ public class Board {
         int distance = 0;
         for (int i= 0;i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++){
-                this.linearBlocks[this.xytTo1D(i,j)] = blocks[i][j];
+                int linearValue = this.xytTo1D(i,j);
+                this.linearBlocks[linearValue] = blocks[i][j];
             }
         for (int i = 0; i < this.dimension*this.dimension; i++){
             if (linearBlocks[i] != i){
@@ -52,15 +58,24 @@ public class Board {
         return distance;
 
     }                   // number of blocks out of place
+    private Block findCorrectIndices(int value){
+        for (int i= 0;i < this.dimension; i++)
+            for (int j = 0; j < this.dimension; j++){
+                if (GOAL_ARRAY[i][j] == value)
+                    return new Block(i,j);
+            }
+        return null;
+    }
     public int manhattan(){
         int manhattan = 0;
         for (int i= 0;i < this.dimension; i++)
             for (int j = 0; j < this.dimension; j++){
                 if (blocks[i][j] != 0){
-                    int bX = this.toX(blocks[i][j]);
-                    int bY = this.toY(blocks[i][j],bX);
-                    final int dist = Math.abs(bX -i)+Math.abs(bY-j);
-                    manhattan += dist;
+                    if (blocks[i][j] != GOAL_ARRAY[i][j]){
+                        Block correctBlock = findCorrectIndices(blocks[i][j]);
+                        int man = Math.abs(i-correctBlock.x)+Math.abs(j-correctBlock.y);
+                        manhattan += man;
+                    }
                 }
 
 
@@ -214,6 +229,7 @@ public class Board {
     }
     public String toString() {
         String output = "";
+        output += String.format("%2d\n", this.dimension);
         for (int i=0;i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 output += String.format(" %2d", blocks[i][j]);
@@ -245,7 +261,9 @@ public class Board {
         }
         Board b = new Board(blocks);
 
-        System.out.print(b+"\n");
+        System.out.print("Initial:\n"+b+"\n");
+        System.out.print("Hamming distance: "+b.hamming()+"\n");
+        System.out.print("Manhattan distance: "+b.manhattan()+"\n");
         for (Board bI: b.neighbors()){
             System.out.print(bI+"\n");
 
